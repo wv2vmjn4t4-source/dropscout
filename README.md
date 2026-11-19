@@ -15,6 +15,7 @@ Each airdrop has these fields. Status (live / upcoming / ended) is calculated fr
 - `url`: official page only. Leave empty if you can't verify it
 - `funding`, `fundingUsd`, `backers`, `share`, `cost`, `costUsd`, `timeMin`: feed the DropsFeed score (S/A/B/C)
 - `sponsored: true`: pins the project to the top with a "Sponsored" label (paid listings)
+- `logo`: optional image URL or file in `logos/` (for example "logos/aster.png"). Without it, the icon from the official site in `url` is used, then initials
 - `affiliate: {"label": "Use wallet X for this drop", "url": "https://..."}`: shows an "Ad" referral box inside the guide
 
 Banners: edit the `BANNERS` block in `index.html`.
