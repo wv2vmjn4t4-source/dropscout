@@ -241,11 +241,16 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 .tk-msg{padding:0 20px;color:var(--muted);line-height:34px}
 @media (prefers-reduced-motion:reduce){.tk-track{animation:none}.ticker{overflow-x:auto}}
 /* news */
+section[id],main[id],.news-top{scroll-margin-top:calc(var(--hdr,102px) + 12px)}
 .news-top{margin:8px 0 18px}
 .news-top .sec-h{margin-bottom:12px;align-items:center}
 .news-top .sec-h h2{font-size:20px}
 .news-top .news{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;padding-bottom:6px;scrollbar-width:thin}
-.news-top .news-item{flex:0 0 300px;scroll-snap-align:start;padding:14px 16px}
+.news-top .news-item{flex:0 0 300px;scroll-snap-align:start;padding:0;overflow:hidden;gap:0}
+.news-img{aspect-ratio:16/9;background:linear-gradient(135deg,rgba(162,89,255,.25),rgba(34,227,255,.15));overflow:hidden}
+.news-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+.news-item:hover .news-img img{transform:scale(1.05)}
+.news-body{display:flex;flex-direction:column;gap:8px;padding:14px 16px;flex:1}
 .news-top .news-item h3{font-size:15px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .news-top .news-item p{-webkit-line-clamp:2;font-size:13px}
 .news-top .empty{flex:1;padding:24px}
@@ -813,25 +818,49 @@ async function loadPrices(){
   try{const rows=await fromGecko(); if(rows.length){drawTicker(rows,"24h");return}}catch(e){}
   if(!$("#tkTrack .tk-item")) $("#tkTrack").innerHTML='<span class="tk-msg">Prices are unavailable right now. Retrying shortly.</span>';
 }
-// ================= NEWS (CryptoCompare, fallback: Cointelegraph RSS) =================
+// ================= NEWS: auto-refresh with article images =================
+// Sources in order: CryptoCompare news API, then RSS feeds (Cointelegraph, CoinDesk, Decrypt) via rss2json.
 function ago(t){const m=Math.max(1,Math.round((Date.now()-t)/6e4));return m<60?m+"m ago":m<1440?Math.round(m/60)+"h ago":Math.round(m/1440)+"d ago"}
 const strip=h=>{const d=document.createElement("div");d.innerHTML=h||"";return (d.textContent||"").trim()};
+const firstImg=h=>{const m=/<img[^>]+src=["']([^"']+)["']/i.exec(h||"");return m?m[1]:""};
+const FEEDS=[["Cointelegraph","https://cointelegraph.com/rss"],["CoinDesk","https://www.coindesk.com/arc/outboundfeeds/rss/"],["Decrypt","https://decrypt.co/feed"]];
+let seenNews=new Set(store.get("df-news-seen",[])), firstNewsLoad=true;
 function showNews(list){
-  $("#newsUpd").textContent="Updated "+new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"})+" · scroll →";
-  $("#newsGrid").innerHTML=list.slice(0,10).map(n=>`<a class="news-item" href="${esc(n.url)}" target="_blank" rel="noopener">
-    <h3>${esc(n.title)}</h3><p>${esc(n.body)}</p><div class="news-meta"><span>${esc(n.source)}</span><span>${ago(n.time)}</span></div></a>`).join("");
+  list=list.filter(n=>n.title&&n.url).sort((a,b)=>b.time-a.time);
+  const uniq=[];const keys=new Set();for(const n of list){const k=n.title.toLowerCase().slice(0,60);if(!keys.has(k)){keys.add(k);uniq.push(n)}}
+  const top=uniq.slice(0,12);
+  const fresh=top.filter(n=>!seenNews.has(n.url));
+  $("#newsUpd").textContent="Updated "+new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"})+(fresh.length&&!firstNewsLoad?" · "+fresh.length+" new":"")+" · scroll →";
+  $("#newsGrid").innerHTML=top.map(n=>{const isNew=!seenNews.has(n.url)&&(Date.now()-n.time)<3*36e5;
+    return `<a class="news-item${n.img?" has-img":""}" href="${esc(n.url)}" target="_blank" rel="noopener">
+    ${n.img?`<div class="news-img"><img src="${esc(n.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()"></div>`:""}
+    <div class="news-body">${isNew?'<span class="pill hot" style="align-self:flex-start">New</span>':""}<h3>${esc(n.title)}</h3><p>${esc(n.body)}</p>
+    <div class="news-meta"><span>${esc(n.source)}</span><span>${ago(n.time)}</span></div></div></a>`}).join("");
+  top.forEach(n=>seenNews.add(n.url)); store.set("df-news-seen",[...seenNews].slice(-300)); firstNewsLoad=false;
 }
-function loadNews(){
-  fetch("https://min-api.cryptocompare.com/data/v2/news/?lang=EN").then(r=>r.json()).then(d=>{
-    if(!Array.isArray(d.Data)||!d.Data.length) throw 0;
-    showNews(d.Data.map(n=>({title:n.title,body:strip(n.body),url:n.url,source:(n.source_info&&n.source_info.name)||n.source,time:n.published_on*1000})));
-  }).catch(()=>fetch("https://api.rss2json.com/v1/api.json?rss_url="+encodeURIComponent("https://cointelegraph.com/rss")).then(r=>r.json()).then(d=>{
-    if(!d.items||!d.items.length) throw 0;
-    showNews(d.items.map(n=>({title:n.title,body:strip(n.description),url:n.link,source:"Cointelegraph",time:Date.parse(n.pubDate.replace(" ","T")+"Z")})));
-  })).catch(()=>{$("#newsGrid").innerHTML='<div class="empty">News could not load right now. Refresh the page in a minute.</div>'});
+async function fromCC(){
+  const r=await fetch("https://min-api.cryptocompare.com/data/v2/news/?lang=EN&sortOrder=latest"); const d=await r.json();
+  if(!Array.isArray(d.Data)||!d.Data.length) throw 0;
+  return d.Data.map(n=>({title:n.title,body:strip(n.body),url:n.url,img:n.imageurl||"",source:(n.source_info&&n.source_info.name)||n.source,time:n.published_on*1000}));
+}
+async function fromRSS(){
+  const res=await Promise.allSettled(FEEDS.map(([name,url])=>fetch("https://api.rss2json.com/v1/api.json?rss_url="+encodeURIComponent(url)).then(r=>r.json()).then(d=>(d.items||[]).map(n=>({
+    title:n.title,body:strip(n.description).slice(0,220),url:n.link,source:name,
+    img:n.thumbnail||(n.enclosure&&n.enclosure.link)||firstImg(n.content)||firstImg(n.description),
+    time:Date.parse((n.pubDate||"").replace(" ","T")+"Z")||Date.now()})))));
+  const all=res.filter(x=>x.status==="fulfilled").flatMap(x=>x.value);
+  if(!all.length) throw 0; return all;
+}
+async function loadNews(){
+  let list=[];
+  try{list=await fromCC()}catch(e){}
+  if(list.filter(n=>n.img).length<4){try{list=list.concat(await fromRSS())}catch(e){}}
+  if(list.length) showNews(list);
+  else if(!$("#newsGrid .news-item")) $("#newsGrid").innerHTML='<div class="empty">News could not load right now. It will retry automatically.</div>';
 }
 loadPrices(); setInterval(loadPrices,30000);
-loadNews(); setInterval(loadNews,600000);
+loadNews(); setInterval(loadNews,180000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)loadNews()});
 
 renderAds();
 $("#grid").innerHTML='<div class="empty">Loading airdrops…</div>';
