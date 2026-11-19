@@ -1,4 +1,4 @@
-# DropScout
+# DropsFeed
 
 A crypto airdrop tracker: live, upcoming and ended airdrops with step-by-step guides, filters, a watchlist and a deadline calendar.
 

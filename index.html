@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DropScout Airdrops</title>
+<title>DropsFeed Airdrops</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Onest:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
@@ -184,9 +184,9 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 
 <header class="top">
   <div class="wrap">
-    <a class="logo" href="#airdrops" aria-label="DropScout home">
+    <a class="logo" href="#airdrops" aria-label="DropsFeed home">
       <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="9" fill="var(--accent)"/><path d="M15 6c3.5 4.6 6 7.9 6 11a6 6 0 0 1-12 0c0-3.1 2.5-6.4 6-11z" fill="#fff"/><circle cx="15" cy="17.5" r="2.2" fill="var(--accent)"/></svg>
-      DropScout
+      DropsFeed
     </a>
     <nav class="nav" aria-label="Sections">
       <a href="#airdrops" aria-current="true">Airdrops</a>
@@ -283,7 +283,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 
 <footer>
   <div class="wrap">
-    <div><b style="color:var(--ink)">DropScout</b> · airdrop tracker. The projects on this page are fictional examples.</div>
+    <div><b style="color:var(--ink)">DropsFeed</b> · airdrop tracker. The projects on this page are fictional examples.</div>
     <div>Not financial advice. Always do your own research.</div>
   </div>
 </footer>
@@ -358,8 +358,8 @@ const store = {
   get(k,def){try{const v=localStorage.getItem(k);return v?JSON.parse(v):def}catch(e){return def}},
   set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 };
-let favs = new Set(store.get("ds-favs",[]));
-let progress = store.get("ds-progress",{});
+let favs = new Set(store.get("df-favs",[]));
+let progress = store.get("df-progress",{});
 
 const $ = s=>document.querySelector(s);
 const esc = s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -479,7 +479,7 @@ function openModal(id){
   if(location.hash!=="#"+id) history.replaceState(null,"","#"+id);
 
   $("#modal").querySelectorAll("[data-step]").forEach(cb=>cb.addEventListener("change",()=>{
-    const arr=progress[x.id]||[];arr[+cb.dataset.step]=cb.checked;progress[x.id]=arr;store.set("ds-progress",progress);updateBar(x);render();
+    const arr=progress[x.id]||[];arr[+cb.dataset.step]=cb.checked;progress[x.id]=arr;store.set("df-progress",progress);updateBar(x);render();
   }));
   $("#mCopy").addEventListener("click",async e=>{
     const text=x.name+" ($"+x.ticker+")\n"+x.steps.map((s,i)=>((progress[x.id]||[])[i]?"[x] ":"[ ] ")+s).join("\n");
@@ -494,7 +494,7 @@ function closeModal(){
 }
 
 function toggleFav(id){
-  favs.has(id)?favs.delete(id):favs.add(id);store.set("ds-favs",[...favs]);render();
+  favs.has(id)?favs.delete(id):favs.add(id);store.set("df-favs",[...favs]);render();
   if($("#overlay").classList.contains("open")) openModal(id);
 }
 
