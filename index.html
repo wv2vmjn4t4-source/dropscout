@@ -124,7 +124,7 @@ select{border:1px solid var(--line);background:#0e0c1e;border-radius:12px;paddin
 .pill.soon{background:rgba(34,227,255,.1);color:var(--cyan);border:1px solid rgba(34,227,255,.35)}
 .pill.ended{background:rgba(255,255,255,.04);color:var(--muted);border:1px solid var(--line)}
 .pill.hot{background:rgba(255,79,216,.12);color:var(--hot);border:1px solid rgba(255,79,216,.4)}
-.diff{display:inline-flex;gap:3px;vertical-align:middle}
+.diff,.c-meta div .diff{display:inline-flex;gap:3px;vertical-align:middle;font-size:0;letter-spacing:0}
 .diff i{display:block;width:7px;height:13px;border-radius:2px;background:rgba(255,255,255,.1)}
 .diff.d1 i:nth-child(-n+1),.diff.d2 i:nth-child(-n+2),.diff.d3 i:nth-child(-n+3){background:var(--cyan);box-shadow:0 0 6px var(--cyan)}
 .c-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -181,6 +181,28 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 .note{margin-top:18px;padding:12px 14px;border-radius:12px;background:rgba(255,201,74,.08);border:1px solid rgba(255,201,74,.3);color:#ffe7a8;font-size:14px}
 .m-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
 
+
+/* affiliate / ad slots */
+.ad{position:relative;display:flex;align-items:center;gap:18px;border-radius:var(--r);border:1px dashed rgba(34,227,255,.45);background:linear-gradient(100deg,rgba(162,89,255,.14),rgba(34,227,255,.08));padding:16px 20px;text-decoration:none;color:var(--ink);overflow:hidden;transition:box-shadow .2s,border-color .2s}
+.ad:hover{border-color:var(--cyan);box-shadow:0 0 28px -8px rgba(34,227,255,.6)}
+.ad.has-img{padding:0;border-style:solid;border-color:var(--line);background:none;display:block}
+.ad.has-img img{display:block;width:100%;height:auto}
+.ad-label{position:absolute;top:8px;right:10px;font:600 10px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:rgba(0,0,0,.45);padding:2px 7px;border-radius:5px}
+.ad-body{flex:1;min-width:0}
+.ad-title{font:700 18px var(--display);text-transform:uppercase;letter-spacing:.02em}
+.ad-text{color:var(--muted);font-size:14px;margin-top:2px}
+.ad-size{font:500 12px var(--mono);color:var(--cyan);margin-top:4px}
+.ad .btn{flex:none}
+.ad-slot{margin:22px 0}
+.ad-slot.top .ad{min-height:90px}
+.ad-slot.mid .ad{min-height:120px}
+.ad-card{flex-direction:column;align-items:stretch;justify-content:space-between;gap:14px;min-height:100%;padding:20px}
+.ad-card .ad-title{font-size:20px}
+.ad-modal{margin-top:18px}
+.ad-modal .ad{min-height:70px;padding:12px 16px}
+.ad-modal .ad-title{font-size:15px}
+@media (max-width:600px){.ad{flex-direction:column;align-items:flex-start}.ad .btn{align-self:stretch;justify-content:center}}
+
 @media (max-width:860px){
   .hero{grid-template-columns:1fr;padding-top:40px}
   .nav{display:none}
@@ -228,6 +250,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
     </div>
   </div>
 
+  <div class="ad-slot top" data-slot="top"></div>
+
   <div class="bar" role="search">
     <label class="search" for="q">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
@@ -267,6 +291,8 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
     <div class="cal" id="cal"></div>
   </section>
 
+  <div class="ad-slot mid" data-slot="mid"></div>
+
   <section class="block" id="safety">
     <div class="sec-h">
       <div><h2>How not to lose your wallet chasing airdrops</h2><p>Most "airdrops" that land in your DMs are phishing. Five rules to keep in mind.</p></div>
@@ -299,7 +325,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 <footer>
   <div class="wrap">
     <div><b style="color:var(--ink)">DropsFeed</b> · airdrop tracker. The projects on this page are fictional examples.</div>
-    <div>Not financial advice. Always do your own research.</div>
+    <div>Not financial advice. Always do your own research. Some links are affiliate links: we may earn a commission at no cost to you.</div>
   </div>
 </footer>
 
@@ -363,6 +389,31 @@ const DROPS = [
   tasks:["NFT","Free mint"],
   steps:["Claim window closed"]}
 ];
+
+
+// ================= AFFILIATE BANNERS =================
+// Edit this block to place your affiliate offers.
+// For an image banner: put the file in /banners/ in the repo and set image:"banners/file.png".
+// Leave image empty to show a text banner. Leave url empty to show a placeholder.
+// Recommended image sizes: top 970x90, mid 970x250, grid 600x500, modal 600x100.
+const BANNERS = {
+  top:   {title:"Your banner here", text:"Leaderboard slot above the airdrop list", size:"970×90", cta:"Advertise", url:"", image:""},
+  grid:  {title:"Sponsored offer", text:"Native card shown as the 3rd item in the airdrop grid", size:"600×500", cta:"Learn more", url:"", image:""},
+  mid:   {title:"Partner banner", text:"Wide slot between the calendar and safety sections", size:"970×250", cta:"Advertise", url:"", image:""},
+  modal: {title:"Partner offer", text:"Small slot inside every airdrop guide", size:"600×100", cta:"Open", url:"", image:""}
+};
+const CONTACT = "#subscribe"; // where placeholder banners link to
+function adHTML(key, extra=""){
+  const b=BANNERS[key]; if(!b) return "";
+  const href=b.url||CONTACT;
+  const rel=b.url?' target="_blank" rel="sponsored noopener"':"";
+  if(b.image) return `<a class="ad has-img ${extra}" href="${esc(href)}"${rel}><span class="ad-label">Ad</span><img src="${esc(b.image)}" alt="${esc(b.title)}" loading="lazy"></a>`;
+  return `<a class="ad ${extra}" href="${esc(href)}"${rel}><span class="ad-label">${b.url?"Ad":"Ad slot"}</span>
+    <div class="ad-body"><div class="ad-title">${esc(b.title)}</div><div class="ad-text">${esc(b.text)}</div>${b.url?"":`<div class="ad-size">${esc(b.size)}</div>`}</div>
+    <span class="btn primary">${esc(b.cta)}</span></a>`;
+}
+function renderAds(){document.querySelectorAll("[data-slot]").forEach(el=>{el.innerHTML=adHTML(el.dataset.slot)})}
+// =====================================================
 
 const CATS = ["All", ...new Set(DROPS.map(x=>x.cat))];
 const STATUS = {live:["Live","live"],soon:["Upcoming","soon"],ended:["Ended","ended"]};
@@ -437,7 +488,8 @@ function card(x){
 
 function render(){
   const list=filtered();
-  $("#grid").innerHTML=list.length?list.map(card).join(""):`<div class="empty">Nothing matches. Clear some filters or switch the status to All.</div>`;
+  const cards=list.map(card); if(cards.length>=3) cards.splice(2,0,adHTML("grid","ad-card"));
+  $("#grid").innerHTML=list.length?cards.join(""):`<div class="empty">Nothing matches. Clear some filters or switch the status to All.</div>`;
   const n=list.length;
   $("#count").textContent=`${n} ${n===1?"project":"projects"}`;
   $("#favCount").textContent=favs.size;
@@ -487,7 +539,8 @@ function openModal(id){
     <div class="m-actions">
       <button class="btn primary" type="button" data-fav="${x.id}" aria-pressed="${favs.has(x.id)}">${favs.has(x.id)?"★ On watchlist":"☆ Add to watchlist"}</button>
       <button class="btn" type="button" id="mCopy">Copy checklist</button>
-    </div>`;
+    </div>
+    <div class="ad-modal">${adHTML("modal")}</div>`;
   updateBar(x);
   $("#overlay").classList.add("open");$("#overlay").setAttribute("aria-hidden","false");
   $("#mClose").focus();
@@ -543,7 +596,7 @@ $("#subForm").addEventListener("submit",e=>{
 function onHash(){const id=location.hash.slice(1);if(DROPS.some(x=>x.id===id))openModal(id)}
 window.addEventListener("hashchange",onHash);
 
-renderChips();stats();calendar();render();onHash();
+renderChips();renderAds();stats();calendar();render();onHash();
 })();
 </script>
 </body>
