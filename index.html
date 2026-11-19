@@ -116,7 +116,7 @@ select{border:1px solid var(--line);background:#0e0c1e;border-radius:12px;paddin
 .c-meta{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;border-top:1px solid var(--line);padding-top:14px}
 .c-meta div span{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-family:var(--mono)}
 .c-meta div b{font-size:15px}
-.c-meta div:first-child b{color:var(--good);text-shadow:0 0 12px rgba(45,255,168,.4)}
+.c-meta div:first-child b{color:var(--good);text-shadow:0 0 12px rgba(45,255,168,.4);font-size:13.5px;line-height:1.3;display:block}
 .tags{display:flex;flex-wrap:wrap;gap:6px}
 .tag{font-size:12px;padding:3px 10px;border-radius:6px;background:rgba(162,89,255,.1);border:1px solid rgba(162,89,255,.22);color:#cbbcff;font-family:var(--mono)}
 .pill{font-size:11.5px;font-weight:800;padding:3px 10px;border-radius:999px;white-space:nowrap;text-transform:uppercase;letter-spacing:.04em}
@@ -182,6 +182,31 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 .m-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
 
 
+
+/* price ticker */
+.ticker{height:34px;border-bottom:1px solid var(--line);background:rgba(0,0,0,.35);overflow:hidden;position:relative;font:500 13px var(--mono)}
+.ticker::before,.ticker::after{content:"";position:absolute;top:0;bottom:0;width:40px;z-index:1;pointer-events:none}
+.ticker::before{left:0;background:linear-gradient(90deg,var(--bg),transparent)}
+.ticker::after{right:0;background:linear-gradient(-90deg,var(--bg),transparent)}
+.tk-track{display:flex;width:max-content;height:100%;align-items:center;animation:tk 60s linear infinite}
+.ticker:hover .tk-track{animation-play-state:paused}
+@keyframes tk{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.tk-item{display:flex;align-items:center;gap:8px;padding:0 22px;white-space:nowrap;border-right:1px solid var(--line)}
+.tk-sym{font-weight:700;color:var(--ink)}
+.tk-price{color:var(--muted)}
+.tk-up{color:var(--good)}
+.tk-down{color:var(--bad)}
+.tk-msg{padding:0 20px;color:var(--muted);line-height:34px}
+@media (prefers-reduced-motion:reduce){.tk-track{animation:none}.ticker{overflow-x:auto}}
+/* news */
+.news{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.news-item{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;text-decoration:none;color:var(--ink);transition:border-color .2s,box-shadow .2s,transform .2s}
+.news-item:hover{border-color:var(--cyan);box-shadow:0 0 24px -8px rgba(34,227,255,.5);transform:translateY(-2px)}
+.news-item h3{font-size:16px;line-height:1.35;font-weight:700}
+.news-item p{margin:0;color:var(--muted);font-size:14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.news-meta{display:flex;gap:10px;font:500 12px var(--mono);color:var(--cyan);text-transform:uppercase;letter-spacing:.04em;margin-top:auto}
+.news-meta span:last-child{color:var(--muted)}
+
 /* affiliate / ad slots */
 .ad{position:relative;display:flex;align-items:center;gap:18px;border-radius:var(--r);border:1px dashed rgba(34,227,255,.45);background:linear-gradient(100deg,rgba(162,89,255,.14),rgba(34,227,255,.08));padding:16px 20px;text-decoration:none;color:var(--ink);overflow:hidden;transition:box-shadow .2s,border-color .2s}
 .ad:hover{border-color:var(--cyan);box-shadow:0 0 28px -8px rgba(34,227,255,.6)}
@@ -220,6 +245,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 <body>
 
 <header class="top">
+  <div class="ticker" aria-label="Crypto prices, 24h change"><div class="tk-track" id="tkTrack"><span class="tk-msg">Loading prices…</span></div></div>
   <div class="wrap">
     <a class="logo" href="#airdrops" aria-label="DropsFeed home">
       <svg width="32" height="32" viewBox="0 0 30 30" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a259ff"/><stop offset="1" stop-color="#22e3ff"/></linearGradient></defs><rect width="30" height="30" rx="9" fill="url(#lg)"/><path d="M15 6c3.5 4.6 6 7.9 6 11a6 6 0 0 1-12 0c0-3.1 2.5-6.4 6-11z" fill="#0a0718"/><circle cx="15" cy="17.5" r="2.2" fill="#22e3ff"/></svg>
@@ -227,6 +253,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
     </a>
     <nav class="nav" aria-label="Sections">
       <a href="#airdrops" aria-current="true">Airdrops</a>
+      <a href="#news">News</a>
       <a href="#calendar">Calendar</a>
       <a href="#safety">Safety</a>
       <a href="#subscribe">Alerts</a>
@@ -241,12 +268,12 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
   <div class="hero">
     <div>
       <h1>Catch every <em>airdrop</em> before the snapshot</h1>
-      <p>A curated list of token airdrops with step-by-step tasks, estimated rewards and deadlines. Tick off steps as you go, build a watchlist and never miss a snapshot.</p>
+      <p>A curated list of token airdrops with step-by-step tasks, rewards and deadlines. Tick off steps as you go, build a watchlist and never miss a snapshot.</p>
     </div>
     <div class="stats">
       <div class="stat"><b class="num" id="sLive">0</b><span><i class="pulse"></i>live</span></div>
       <div class="stat"><b class="num" id="sSoon">0</b><span>upcoming</span></div>
-      <div class="stat"><b class="num" id="sValue">$0</b><span>est. live pool</span></div>
+      <div class="stat"><b class="num" id="sValue">0</b><span>claims open</span></div>
     </div>
   </div>
 
@@ -266,7 +293,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
     <label for="sort" class="c-sub" style="display:flex;gap:8px;align-items:center">Sort
       <select id="sort">
         <option value="featured">Featured</option>
-        <option value="value">Highest reward</option>
+        <option value="value">Confirmed first</option>
         <option value="deadline">Ending soonest</option>
         <option value="easy">Easiest first</option>
         <option value="new">Newest</option>
@@ -281,8 +308,15 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
     <label for="fTestnet"><input type="checkbox" id="fTestnet"> Testnets only</label>
   </div>
 
-  <div class="result-line"><span id="count" class="num"></span><span>Demo data</span></div>
+  <div class="result-line"><span id="count" class="num"></span><span id="upd"></span></div>
   <div class="grid" id="grid"></div>
+
+  <section class="block" id="news">
+    <div class="sec-h">
+      <div><h2>Crypto news</h2><p>Latest headlines from major crypto outlets, refreshed every few minutes.</p></div>
+    </div>
+    <div class="news" id="newsGrid"><div class="empty">Loading news…</div></div>
+  </section>
 
   <section class="block" id="calendar">
     <div class="sec-h">
@@ -324,7 +358,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 
 <footer>
   <div class="wrap">
-    <div><b style="color:var(--ink)">DropsFeed</b> · airdrop tracker. The projects on this page are fictional examples.</div>
+    <div><b style="color:var(--ink)">DropsFeed</b> · airdrop tracker. Listings are for information only; projects can change terms at any time.</div>
     <div>Not financial advice. Always do your own research. Some links are affiliate links: we may earn a commission at no cost to you.</div>
   </div>
 </footer>
@@ -336,59 +370,13 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 <script>
 (function(){
 const DAY = 864e5, now = Date.now();
-const d = n => now + n*DAY;
-
-// Demo projects (fictional)
-const DROPS = [
- {id:"lumen-l2",name:"Lumen Network",ticker:"LMN",chain:"Ethereum L2",cat:"L2",status:"live",value:1200,start:d(-20),end:d(9),diff:2,kyc:false,deposit:true,testnet:false,featured:true,added:d(-20),
-  desc:"An optimistic rollup with native account abstraction. The team has confirmed points for early bridge users.",
-  tasks:["Bridge","DEX","Points"],
-  steps:["Create a fresh wallet and fund it with 0.01–0.02 ETH","Bridge funds to Lumen through the official bridge","Make 3–5 swaps on any DEX on the network","Provide liquidity to the LMN/ETH pool for at least a week","Check your points on the project dashboard"]},
- {id:"orbit-wallet",name:"Orbit Wallet",ticker:"ORB",chain:"Multichain",cat:"Wallet",status:"live",value:300,start:d(-5),end:d(21),diff:1,kyc:false,deposit:false,testnet:false,featured:false,added:d(-5),
-  desc:"A non-custodial wallet rewarding daily check-ins and referrals with ORB.",
-  tasks:["Daily","Referral","Twitter"],
-  steps:["Install the Orbit extension from the official store","Create a new wallet and store the phrase offline","Check in under Quests every day","Follow the project's official X account"]},
- {id:"kelp-testnet",name:"Kelp Chain",ticker:"KELP",chain:"Cosmos",cat:"Testnet",status:"live",value:800,start:d(-12),end:d(4),diff:3,kyc:false,deposit:false,testnet:true,featured:true,added:d(-12),
-  desc:"Testnet for a modular L1. Validators and active testers in the incentivized phase will be rewarded.",
-  tasks:["Testnet","Faucet","Discord","Node"],
-  steps:["Get test tokens from the Discord faucet","Make 10+ testnet transactions","Stake tokens with any validator","Optional: run a node using the docs guide","Submit the bug feedback form"]},
- {id:"mintara",name:"Mintara",ticker:"MNT",chain:"Solana",cat:"NFT",status:"live",value:150,start:d(-3),end:d(12),diff:1,kyc:false,deposit:true,testnet:false,featured:false,added:d(-3),
-  desc:"A Solana NFT marketplace awarding points for listings and trades.",
-  tasks:["NFT","Trading","Points"],
-  steps:["Connect your wallet to the marketplace","List any NFT for sale","Make one purchase","Watch for the weekly points distribution"]},
- {id:"pyre-defi",name:"Pyre Finance",ticker:"PYR",chain:"Arbitrum",cat:"DeFi",status:"live",value:950,start:d(-30),end:d(2),diff:2,kyc:true,deposit:true,testnet:false,featured:false,added:d(-30),
-  desc:"A lending protocol with a retroactive drop. Snapshot in 2 days; claiming requires verification.",
-  tasks:["Lending","KYC","Snapshot"],
-  steps:["Supply at least $50 of any supported asset","Take out a small loan and repay it","Complete KYC on the claim page before the snapshot"]},
- {id:"questly",name:"Questly",ticker:"QST",chain:"BNB Chain",cat:"SocialFi",status:"live",value:90,start:d(-8),end:d(30),diff:1,kyc:false,deposit:false,testnet:false,featured:false,added:d(-1),
-  desc:"A quest platform where social tasks earn XP that converts into tokens.",
-  tasks:["Twitter","Telegram","Quiz"],
-  steps:["Link your X and Telegram","Pass the intro quiz about the project","Invite one friend with your link"]},
- {id:"zerowave",name:"ZeroWave",ticker:"ZWV",chain:"zk rollup",cat:"L2",status:"soon",value:2000,start:d(6),end:d(60),diff:3,kyc:false,deposit:true,testnet:false,featured:true,added:d(-2),
-  desc:"A ZK rollup launching mainnet in a week. A points program for early deposits is expected.",
-  tasks:["Bridge","Early","Points"],
-  steps:["Follow the official channels and turn on notifications","Have ETH on Ethereum ready for gas and bridging","Deposit through the official bridge on launch day"]},
- {id:"hexa-game",name:"Hexa Realms",ticker:"HEX",chain:"Immutable",cat:"Gaming",status:"soon",value:400,start:d(3),end:d(45),diff:2,kyc:false,deposit:false,testnet:true,featured:false,added:d(-4),
-  desc:"An on-chain strategy game opening a playtest. Season players get a share of the genesis allocation.",
-  tasks:["Game","Discord","Playtest"],
-  steps:["Join the waitlist on the website","Get the Playtester role in Discord","Play 10 matches in season one"]},
- {id:"aquarelle",name:"Aquarelle DEX",ticker:"AQR",chain:"Base",cat:"DeFi",status:"soon",value:600,start:d(10),end:d(40),diff:2,kyc:false,deposit:true,testnet:false,featured:false,added:d(-6),
-  desc:"A concentrated-liquidity DEX on Base. A drop for first-month LPs has been announced.",
-  tasks:["LP","DEX"],
-  steps:["Fund your wallet on Base","After launch, add liquidity to any pool","Keep the position in range for at least 14 days"]},
- {id:"nodeforge",name:"NodeForge",ticker:"NFG",chain:"DePIN",cat:"DePIN",status:"live",value:500,start:d(-15),end:d(18),diff:2,kyc:false,deposit:false,testnet:false,featured:false,added:d(-15),
-  desc:"A decentralized compute network rewarding uptime of a light browser node.",
-  tasks:["Node","Uptime","Referral"],
-  steps:["Install the NodeForge node extension","Keep it running at least 8 hours a day","Check your uptime in the dashboard"]},
- {id:"cinder",name:"Cinder Swap",ticker:"CDR",chain:"Ethereum",cat:"DeFi",status:"ended",value:1100,start:d(-90),end:d(-10),diff:2,kyc:false,deposit:true,testnet:false,featured:false,added:d(-90),
-  desc:"This airdrop has ended. Claims were open for 30 days; unclaimed tokens went to the DAO treasury.",
-  tasks:["DEX","Claimed"],
-  steps:["Claim window closed"]},
- {id:"petal-nft",name:"Petal Pass",ticker:"PTL",chain:"Polygon",cat:"NFT",status:"ended",value:70,start:d(-60),end:d(-25),diff:1,kyc:false,deposit:false,testnet:false,featured:false,added:d(-60),
-  desc:"Free pass mint for holders. This airdrop has ended.",
-  tasks:["NFT","Free mint"],
-  steps:["Claim window closed"]}
-];
+const T = v => v ? Date.parse(v) : null;
+let DROPS = [], UPDATED = "";
+function prep(x){
+  x.startT=T(x.start); x.endT=T(x.end); x.addedT=T(x.added)||0;
+  x.status = (x.endT && x.endT<now) ? "ended" : (x.startT && x.startT>now) ? "soon" : "live";
+  x.ticker = x.ticker||""; return x;
+}
 
 
 // ================= AFFILIATE BANNERS =================
@@ -415,7 +403,7 @@ function adHTML(key, extra=""){
 function renderAds(){document.querySelectorAll("[data-slot]").forEach(el=>{el.innerHTML=adHTML(el.dataset.slot)})}
 // =====================================================
 
-const CATS = ["All", ...new Set(DROPS.map(x=>x.cat))];
+let CATS = ["All"];
 const STATUS = {live:["Live","live"],soon:["Upcoming","soon"],ended:["Ended","ended"]};
 const state = {status:"live",cat:"All",q:"",sort:"featured",noKyc:false,free:false,testnet:false,favOnly:false};
 
@@ -431,14 +419,16 @@ const $ = s=>document.querySelector(s);
 const esc = s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const money = v=>"$"+v.toLocaleString("en-US");
 function hue(str){let h=0;for(const c of str)h=(h*31+c.charCodeAt(0))%360;return h}
-function ava(x){const h=hue(x.id);return `<div class="ava" style="background:linear-gradient(135deg,hsl(${h} 90% 60%),hsl(${(h+60)%360} 90% 45%))" aria-hidden="true">${esc(x.ticker.slice(0,2))}</div>`}
+function ava(x){const h=hue(x.id);return `<div class="ava" style="background:linear-gradient(135deg,hsl(${h} 90% 60%),hsl(${(h+60)%360} 90% 45%))" aria-hidden="true">${esc((x.ticker||x.name).slice(0,2).toUpperCase())}</div>`}
 function left(x){
-  const t = x.status==="soon" ? x.start : x.end;
-  const diff = t-now;
   if(x.status==="ended") return "Ended";
-  const days=Math.floor(Math.abs(diff)/DAY), hrs=Math.floor((Math.abs(diff)%DAY)/36e5);
+  const t = x.status==="soon" ? x.startT : x.endT;
+  if(!t) return "TBA";
+  const diff=t-now, days=Math.floor(diff/DAY), hrs=Math.floor((diff%DAY)/36e5);
   return (x.status==="soon"?"in ":"")+(days>0?days+"d ":"")+hrs+"h";
 }
+const dl = x => x.status==="soon" ? x.startT : (x.endT||Infinity);
+const tick = x => x.ticker ? "$"+x.ticker+" · " : "";
 const diffBar = n=>`<span class="diff d${n}" aria-label="Difficulty ${n} of 3"><i></i><i></i><i></i></span>`;
 const diffName = n=>["","Easy","Medium","Hard"][n];
 function pct(x){const p=progress[x.id]||[];return x.steps.length?Math.round(p.filter(Boolean).length/x.steps.length*100):0}
@@ -453,11 +443,11 @@ function filtered(){
     (!q||[x.name,x.ticker,x.chain,x.cat].join(" ").toLowerCase().includes(q))
   );
   const s={
-    featured:(a,b)=>(b.featured-a.featured)||(b.value-a.value),
-    value:(a,b)=>b.value-a.value,
-    deadline:(a,b)=>(a.status==="soon"?a.start:a.end)-(b.status==="soon"?b.start:b.end),
-    easy:(a,b)=>a.diff-b.diff||b.value-a.value,
-    new:(a,b)=>b.added-a.added
+    featured:(a,b)=>(b.featured-a.featured)||(b.confirmed-a.confirmed)||(dl(a)-dl(b)),
+    value:(a,b)=>(b.confirmed-a.confirmed)||(dl(a)-dl(b)),
+    deadline:(a,b)=>dl(a)-dl(b),
+    easy:(a,b)=>a.diff-b.diff||(b.confirmed-a.confirmed),
+    new:(a,b)=>b.addedT-a.addedT
   }[state.sort];
   return list.sort(s);
 }
@@ -468,18 +458,18 @@ function renderChips(){
 
 function card(x){
   const [lbl,cls]=STATUS[x.status];
-  const urgent = x.status==="live" && (x.end-now)<5*DAY;
+  const urgent = x.status==="live" && x.endT && (x.endT-now)<5*DAY;
   const p=pct(x);
   return `<article class="card${x.featured?" featured":""}" tabindex="0" data-id="${x.id}" aria-label="${esc(x.name)}">
     <div class="c-head">${ava(x)}
-      <div><div class="c-name">${esc(x.name)}</div><div class="c-sub">$${esc(x.ticker)} · ${esc(x.chain)}</div></div>
+      <div><div class="c-name">${esc(x.name)}</div><div class="c-sub">${esc(tick(x))}${esc(x.chain)}</div></div>
       <button type="button" class="star" data-fav="${x.id}" aria-pressed="${favs.has(x.id)}" aria-label="Add to watchlist">${favs.has(x.id)?"★":"☆"}</button>
     </div>
-    <div class="c-row"><span class="pill ${cls}">${lbl}</span>${x.featured?'<span class="pill hot">Hot</span>':""}${urgent?'<span class="pill hot">Ending soon</span>':""}${p>0?`<span class="pill live">${p}% done</span>`:""}</div>
+    <div class="c-row"><span class="pill ${cls}">${lbl}</span>${x.confirmed?'<span class="pill soon">Confirmed</span>':'<span class="pill ended">Potential</span>'}${x.featured&&x.status!=="ended"?'<span class="pill hot">Hot</span>':""}${urgent?'<span class="pill hot">Ending soon</span>':""}${p>0?`<span class="pill live">${p}% done</span>`:""}</div>
     <p class="c-desc">${esc(x.desc)}</p>
     <div class="tags">${x.tasks.map(t=>`<span class="tag">${esc(t)}</span>`).join("")}</div>
     <div class="c-meta">
-      <div><span>Est. reward</span><b class="num">~${money(x.value)}</b></div>
+      <div><span>Reward</span><b class="rw">${esc(x.reward)}</b></div>
       <div><span>${x.status==="soon"?"Starts":"Time left"}</span><b class="num">${left(x)}</b></div>
       <div><span>Difficulty</span><b>${diffBar(x.diff)}</b></div>
     </div>
@@ -500,15 +490,15 @@ function stats(){
   const live=DROPS.filter(x=>x.status==="live");
   $("#sLive").textContent=live.length;
   $("#sSoon").textContent=DROPS.filter(x=>x.status==="soon").length;
-  $("#sValue").textContent=money(live.reduce((s,x)=>s+x.value,0));
+  $("#sValue").textContent=DROPS.filter(x=>x.status==="live"&&x.cat==="Claim").length;
 }
 
 function calendar(){
-  const items=DROPS.filter(x=>x.status!=="ended").map(x=>({x,t:x.status==="soon"?x.start:x.end,kind:x.status==="soon"?"Starts":"Deadline"})).sort((a,b)=>a.t-b.t).slice(0,8);
+  const items=DROPS.filter(x=>x.status!=="ended").map(x=>({x,t:x.status==="soon"?x.startT:x.endT,kind:x.status==="soon"?"Starts":"Deadline"})).filter(i=>i.t).sort((a,b)=>a.t-b.t).slice(0,8);
   const mon=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   $("#cal").innerHTML=items.map(({x,t,kind})=>{const dt=new Date(t);return `<div class="cal-item" tabindex="0" data-id="${x.id}">
     <div class="cal-date"><b class="num">${dt.getDate()}</b><span>${mon[dt.getMonth()]}</span></div>
-    <div><div class="c-name" style="font-size:15px">${esc(x.name)}</div><div class="c-sub">${kind} · ~${money(x.value)}</div></div></div>`}).join("");
+    <div><div class="c-name" style="font-size:15px">${esc(x.name)}</div><div class="c-sub">${kind} · ${esc(x.reward)}</div></div></div>`}).join("");
 }
 
 // modal
@@ -519,15 +509,16 @@ function openModal(id){
   const done=progress[x.id]||[];
   const [lbl,cls]=STATUS[x.status];
   $("#modal").innerHTML=`<button class="x" type="button" id="mClose" aria-label="Close">✕</button>
-    <div class="m-head">${ava(x)}<div><h2 id="mTitle">${esc(x.name)}</h2><div class="c-sub">$${esc(x.ticker)} · ${esc(x.chain)} · ${esc(x.cat)}</div></div></div>
+    <div class="m-head">${ava(x)}<div><h2 id="mTitle">${esc(x.name)}</h2><div class="c-sub">${esc(tick(x))}${esc(x.chain)} · ${esc(x.cat)}</div></div></div>
     <p style="color:var(--muted);margin:16px 0 0">${esc(x.desc)}</p>
     <div class="m-grid">
       <div><span>Status</span><b><span class="pill ${cls}">${lbl}</span></b></div>
-      <div><span>Est. reward</span><b class="num">~${money(x.value)}</b></div>
+      <div><span>Reward</span><b>${esc(x.reward)}</b></div>
       <div><span>${x.status==="soon"?"Starts":"Time left"}</span><b class="num">${left(x)}</b></div>
       <div><span>Difficulty</span><b>${diffName(x.diff)}</b></div>
     </div>
     <div class="c-row" style="margin-bottom:16px">
+      <span class="tag">${x.confirmed?"Airdrop confirmed":"Not confirmed"}</span>
       <span class="tag">${x.kyc?"KYC required":"No KYC"}</span>
       <span class="tag">${x.deposit?"Deposit / gas needed":"Free"}</span>
       ${x.testnet?'<span class="tag">Testnet</span>':""}
@@ -535,11 +526,13 @@ function openModal(id){
     <h3 style="font-size:17px">Step-by-step guide</h3>
     <div class="progress" aria-hidden="true"><i id="mBar"></i></div>
     <ul class="steps">${x.steps.map((s,i)=>`<li><label for="st-${i}"><input type="checkbox" id="st-${i}" data-step="${i}" ${done[i]?"checked":""} ${x.status==="ended"?"disabled":""}><span>${i+1}. ${esc(s)}</span></label></li>`).join("")}</ul>
-    <div class="note">Reward estimates are rough and no airdrop is guaranteed. Only use links from the project's official channels.</div>
+    <div class="note">${x.url?"":"No verified official link yet: get it from the project's official X account. "}Never share your seed phrase. Dates can change, so confirm on the project's own channels before you act.</div>
     <div class="m-actions">
-      <button class="btn primary" type="button" data-fav="${x.id}" aria-pressed="${favs.has(x.id)}">${favs.has(x.id)?"★ On watchlist":"☆ Add to watchlist"}</button>
+      ${x.url?`<a class="btn primary" href="${esc(x.url)}" target="_blank" rel="noopener">Official page ↗</a>`:""}
+      <button class="btn" type="button" data-fav="${x.id}" aria-pressed="${favs.has(x.id)}">${favs.has(x.id)?"★ On watchlist":"☆ Add to watchlist"}</button>
       <button class="btn" type="button" id="mCopy">Copy checklist</button>
     </div>
+    <div class="c-sub" style="margin-top:12px">Source: <a href="${esc(x.source)}" target="_blank" rel="noopener">${esc(new URL(x.source).hostname.replace("www.",""))}</a> · checked ${esc(UPDATED)}</div>
     <div class="ad-modal">${adHTML("modal")}</div>`;
   updateBar(x);
   $("#overlay").classList.add("open");$("#overlay").setAttribute("aria-hidden","false");
@@ -550,7 +543,7 @@ function openModal(id){
     const arr=progress[x.id]||[];arr[+cb.dataset.step]=cb.checked;progress[x.id]=arr;store.set("df-progress",progress);updateBar(x);render();
   }));
   $("#mCopy").addEventListener("click",async e=>{
-    const text=x.name+" ($"+x.ticker+")\n"+x.steps.map((s,i)=>((progress[x.id]||[])[i]?"[x] ":"[ ] ")+s).join("\n");
+    const text=x.name+(x.ticker?" ($"+x.ticker+")":"")+"\n"+x.steps.map((s,i)=>((progress[x.id]||[])[i]?"[x] ":"[ ] ")+s).join("\n");
     try{await navigator.clipboard.writeText(text);e.target.textContent="Copied"}catch(err){e.target.textContent="Couldn't copy"}
   });
 }
@@ -596,7 +589,45 @@ $("#subForm").addEventListener("submit",e=>{
 function onHash(){const id=location.hash.slice(1);if(DROPS.some(x=>x.id===id))openModal(id)}
 window.addEventListener("hashchange",onHash);
 
-renderChips();renderAds();stats();calendar();render();onHash();
+
+// ================= PRICE TICKER (CoinGecko, free, no key) =================
+const COINS=[["bitcoin","BTC"],["ethereum","ETH"],["solana","SOL"],["binancecoin","BNB"],["ripple","XRP"],["dogecoin","DOGE"],["cardano","ADA"],["the-open-network","TON"],["avalanche-2","AVAX"],["chainlink","LINK"],["sui","SUI"],["hyperliquid","HYPE"]];
+const fmtP=v=>v>=1000?v.toLocaleString("en-US",{maximumFractionDigits:0}):v>=1?v.toLocaleString("en-US",{maximumFractionDigits:2}):v.toLocaleString("en-US",{maximumSignificantDigits:4});
+function loadPrices(){
+  fetch("https://api.coingecko.com/api/v3/simple/price?ids="+COINS.map(c=>c[0]).join(",")+"&vs_currencies=usd&include_24hr_change=true")
+  .then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>{
+    const items=COINS.filter(([id])=>d[id]).map(([id,sym])=>{const p=d[id].usd,c=d[id].usd_24h_change||0;
+      return `<span class="tk-item"><span class="tk-sym">${sym}</span><span class="tk-price num">$${fmtP(p)}</span><span class="${c>=0?"tk-up":"tk-down"} num">${c>=0?"▲":"▼"} ${Math.abs(c).toFixed(2)}%</span></span>`}).join("");
+    if(items) $("#tkTrack").innerHTML=items+items;
+  }).catch(()=>{ if(!$("#tkTrack .tk-item")) $("#tkTrack").innerHTML='<span class="tk-msg">Prices are unavailable right now. They will retry in a minute.</span>'});
+}
+// ================= NEWS (CryptoCompare, fallback: Cointelegraph RSS) =================
+function ago(t){const m=Math.max(1,Math.round((Date.now()-t)/6e4));return m<60?m+"m ago":m<1440?Math.round(m/60)+"h ago":Math.round(m/1440)+"d ago"}
+const strip=h=>{const d=document.createElement("div");d.innerHTML=h||"";return (d.textContent||"").trim()};
+function showNews(list){
+  $("#newsGrid").innerHTML=list.slice(0,9).map(n=>`<a class="news-item" href="${esc(n.url)}" target="_blank" rel="noopener">
+    <h3>${esc(n.title)}</h3><p>${esc(n.body)}</p><div class="news-meta"><span>${esc(n.source)}</span><span>${ago(n.time)}</span></div></a>`).join("");
+}
+function loadNews(){
+  fetch("https://min-api.cryptocompare.com/data/v2/news/?lang=EN").then(r=>r.json()).then(d=>{
+    if(!Array.isArray(d.Data)||!d.Data.length) throw 0;
+    showNews(d.Data.map(n=>({title:n.title,body:strip(n.body),url:n.url,source:(n.source_info&&n.source_info.name)||n.source,time:n.published_on*1000})));
+  }).catch(()=>fetch("https://api.rss2json.com/v1/api.json?rss_url="+encodeURIComponent("https://cointelegraph.com/rss")).then(r=>r.json()).then(d=>{
+    if(!d.items||!d.items.length) throw 0;
+    showNews(d.items.map(n=>({title:n.title,body:strip(n.description),url:n.link,source:"Cointelegraph",time:Date.parse(n.pubDate.replace(" ","T")+"Z")})));
+  })).catch(()=>{$("#newsGrid").innerHTML='<div class="empty">News could not load right now. Refresh the page in a minute.</div>'});
+}
+loadPrices(); setInterval(loadPrices,60000);
+loadNews(); setInterval(loadNews,600000);
+
+renderAds();
+$("#grid").innerHTML='<div class="empty">Loading airdrops…</div>';
+fetch("airdrops.json",{cache:"no-cache"}).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(data=>{
+  UPDATED=data.updated||""; DROPS=(data.airdrops||[]).map(prep);
+  CATS=["All",...new Set(DROPS.map(x=>x.cat))];
+  $("#upd").textContent=UPDATED?"Updated "+new Date(UPDATED).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";
+  renderChips();stats();calendar();render();onHash();
+}).catch(()=>{$("#grid").innerHTML='<div class="empty">Could not load the airdrop list. Refresh the page to try again.</div>'});
 })();
 </script>
 </body>
