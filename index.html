@@ -250,7 +250,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 <body>
 
 <header class="top">
-  <div class="ticker" aria-label="Crypto prices, 24h change"><div class="tk-track" id="tkTrack"><span class="tk-msg">Loading prices…</span></div></div>
+  <div class="ticker" aria-label="Crypto prices, 10-minute change"><div class="tk-track" id="tkTrack"><span class="tk-msg">Loading prices…</span></div></div>
   <div class="wrap">
     <a class="logo" href="#airdrops" aria-label="DropsFeed home">
       <svg width="32" height="32" viewBox="0 0 30 30" aria-hidden="true"><defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a259ff"/><stop offset="1" stop-color="#22e3ff"/></linearGradient></defs><rect width="30" height="30" rx="9" fill="url(#lg)"/><path d="M15 6c3.5 4.6 6 7.9 6 11a6 6 0 0 1-12 0c0-3.1 2.5-6.4 6-11z" fill="#0a0718"/><circle cx="15" cy="17.5" r="2.2" fill="#22e3ff"/></svg>
@@ -605,16 +605,33 @@ function onHash(){const id=location.hash.slice(1);if(DROPS.some(x=>x.id===id))op
 window.addEventListener("hashchange",onHash);
 
 
-// ================= PRICE TICKER (CoinGecko, free, no key) =================
-const COINS=[["bitcoin","BTC"],["ethereum","ETH"],["solana","SOL"],["binancecoin","BNB"],["ripple","XRP"],["dogecoin","DOGE"],["cardano","ADA"],["the-open-network","TON"],["avalanche-2","AVAX"],["chainlink","LINK"],["sui","SUI"],["hyperliquid","HYPE"]];
+// ================= PRICE TICKER: 10-minute change =================
+// Main source: Binance public market data (rolling 10m window). Fallback: CoinGecko (24h change).
+const COINS=[["BTC","bitcoin"],["ETH","ethereum"],["SOL","solana"],["BNB","binancecoin"],["XRP","ripple"],["DOGE","dogecoin"],["ADA","cardano"],["TON","the-open-network"],["AVAX","avalanche-2"],["LINK","chainlink"],["SUI","sui"],["TRX","tron"]];
+const WINDOW="10m";
 const fmtP=v=>v>=1000?v.toLocaleString("en-US",{maximumFractionDigits:0}):v>=1?v.toLocaleString("en-US",{maximumFractionDigits:2}):v.toLocaleString("en-US",{maximumSignificantDigits:4});
-function loadPrices(){
-  fetch("https://api.coingecko.com/api/v3/simple/price?ids="+COINS.map(c=>c[0]).join(",")+"&vs_currencies=usd&include_24hr_change=true")
-  .then(r=>{if(!r.ok)throw 0;return r.json()}).then(d=>{
-    const items=COINS.filter(([id])=>d[id]).map(([id,sym])=>{const p=d[id].usd,c=d[id].usd_24h_change||0;
-      return `<span class="tk-item"><span class="tk-sym">${sym}</span><span class="tk-price num">$${fmtP(p)}</span><span class="${c>=0?"tk-up":"tk-down"} num">${c>=0?"▲":"▼"} ${Math.abs(c).toFixed(2)}%</span></span>`}).join("");
-    if(items) $("#tkTrack").innerHTML=items+items;
-  }).catch(()=>{ if(!$("#tkTrack .tk-item")) $("#tkTrack").innerHTML='<span class="tk-msg">Prices are unavailable right now. They will retry in a minute.</span>'});
+function drawTicker(rows,label){
+  const items=rows.map(r=>`<span class="tk-item"><span class="tk-sym">${r.sym}</span><span class="tk-price num">$${fmtP(r.price)}</span><span class="${r.chg>=0?"tk-up":"tk-down"} num">${r.chg>=0?"▲":"▼"} ${Math.abs(r.chg).toFixed(2)}%</span><span class="tk-price">${label}</span></span>`).join("");
+  if(items) $("#tkTrack").innerHTML=items+items;
+}
+async function fromBinance(host){
+  const syms=JSON.stringify(COINS.map(c=>c[0]+"USDT"));
+  const r=await fetch(`${host}/api/v3/ticker?windowSize=${WINDOW}&type=MINI&symbols=${encodeURIComponent(syms)}`);
+  if(!r.ok) throw 0;
+  const d=await r.json(); const by={}; d.forEach(t=>by[t.symbol]=t);
+  return COINS.filter(([s])=>by[s+"USDT"]).map(([s])=>{const t=by[s+"USDT"],o=+t.openPrice,c=+t.lastPrice;return {sym:s,price:c,chg:o?(c-o)/o*100:0}});
+}
+async function fromGecko(){
+  const r=await fetch("https://api.coingecko.com/api/v3/simple/price?ids="+COINS.map(c=>c[1]).join(",")+"&vs_currencies=usd&include_24hr_change=true");
+  if(!r.ok) throw 0; const d=await r.json();
+  return COINS.filter(([,id])=>d[id]).map(([s,id])=>({sym:s,price:d[id].usd,chg:d[id].usd_24h_change||0}));
+}
+async function loadPrices(){
+  for(const host of ["https://data-api.binance.vision","https://api.binance.com"]){
+    try{const rows=await fromBinance(host); if(rows.length){drawTicker(rows,"10m");return}}catch(e){}
+  }
+  try{const rows=await fromGecko(); if(rows.length){drawTicker(rows,"24h");return}}catch(e){}
+  if(!$("#tkTrack .tk-item")) $("#tkTrack").innerHTML='<span class="tk-msg">Prices are unavailable right now. Retrying shortly.</span>';
 }
 // ================= NEWS (CryptoCompare, fallback: Cointelegraph RSS) =================
 function ago(t){const m=Math.max(1,Math.round((Date.now()-t)/6e4));return m<60?m+"m ago":m<1440?Math.round(m/60)+"h ago":Math.round(m/1440)+"d ago"}
@@ -632,7 +649,7 @@ function loadNews(){
     showNews(d.items.map(n=>({title:n.title,body:strip(n.description),url:n.link,source:"Cointelegraph",time:Date.parse(n.pubDate.replace(" ","T")+"Z")})));
   })).catch(()=>{$("#newsGrid").innerHTML='<div class="empty">News could not load right now. Refresh the page in a minute.</div>'});
 }
-loadPrices(); setInterval(loadPrices,60000);
+loadPrices(); setInterval(loadPrices,30000);
 loadNews(); setInterval(loadNews,600000);
 
 renderAds();
