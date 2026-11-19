@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DropScout Airdrops</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Onest:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Layout: sticky top bar → compact hero with live counters → filter rail + card grid → safety block → subscribe → footer */
+:root{
+  --bg:#f3f4f8;
+  --surface:#ffffff;
+  --ink:#141a2e;
+  --muted:#5d6580;
+  --line:#dfe2ec;
+  --accent:#2f4bff;
+  --accent-soft:#e6eaff;
+  --hot:#ff7a1a;
+  --good:#12935a;
+  --warn:#c98500;
+  --bad:#d0353f;
+  --display:"Unbounded", "Arial Black", system-ui, sans-serif;
+  --body:"Onest", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, monospace;
+  --r:14px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1120;--surface:#161b2e;--ink:#eef0f8;--muted:#9aa2bd;--line:#262d45;
+    --accent:#7088ff;--accent-soft:#1f2850;--hot:#ff9245;--good:#3fcf8e;--warn:#f0b43a;--bad:#ff6b73;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1120;--surface:#161b2e;--ink:#eef0f8;--muted:#9aa2bd;--line:#262d45;
+  --accent:#7088ff;--accent-soft:#1f2850;--hot:#ff9245;--good:#3fcf8e;--warn:#f0b43a;--bad:#ff6b73;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);-webkit-font-smoothing:antialiased}
+a{color:var(--accent)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1200px;margin:0 auto;padding:0 20px}
+h1,h2,h3{text-wrap:balance;margin:0}
+.num{font-variant-numeric:tabular-nums}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:24px;height:64px}
+.logo{display:flex;align-items:center;gap:10px;font:700 18px var(--display);text-decoration:none;color:var(--ink)}
+.logo svg{flex:none}
+.nav{display:flex;gap:4px;margin-left:8px}
+.nav a{padding:8px 12px;border-radius:10px;text-decoration:none;color:var(--muted);font-weight:500}
+.nav a:hover,.nav a[aria-current="true"]{color:var(--ink);background:var(--surface)}
+.top .spacer{flex:1}
+.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);padding:9px 16px;border-radius:999px;cursor:pointer;font-weight:600;text-decoration:none;color:var(--ink)}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{filter:brightness(1.08)}
+.fav-count{background:var(--accent-soft);color:var(--accent);border-radius:999px;padding:0 8px;font-size:13px}
+
+/* hero */
+.hero{padding:44px 0 28px;display:grid;grid-template-columns:1.3fr 1fr;gap:32px;align-items:end}
+.hero h1{font:700 clamp(28px,4.4vw,48px)/1.08 var(--display);letter-spacing:-.01em}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero p{color:var(--muted);max-width:56ch;margin:16px 0 0;font-size:17px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.stat b{display:block;font:700 26px var(--display)}
+.stat span{color:var(--muted);font-size:13px}
+.pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--good);margin-right:6px;box-shadow:0 0 0 0 var(--good);animation:p 2s infinite}
+@keyframes p{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--good) 60%,transparent)}100%{box-shadow:0 0 0 10px transparent}}
+
+/* filters */
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.search{flex:1 1 240px;display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:0 12px;background:var(--bg)}
+.search input{border:0;background:transparent;padding:10px 0;width:100%;outline:none}
+.tabs{display:flex;gap:4px;background:var(--bg);padding:4px;border-radius:12px;border:1px solid var(--line)}
+.tabs button{border:0;background:transparent;padding:7px 14px;border-radius:9px;cursor:pointer;font-weight:600;color:var(--muted)}
+.tabs button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgb(0 0 0 / .08)}
+select{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 12px;cursor:pointer}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;cursor:pointer;font-size:14px;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.toggles{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:14px}
+.toggles label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.toggles input{accent-color:var(--accent);width:16px;height:16px}
+.result-line{display:flex;justify-content:space-between;align-items:center;margin:18px 0 12px;color:var(--muted);font-size:14px}
+
+/* grid + cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.card{position:relative;display:flex;flex-direction:column;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;cursor:pointer;transition:transform .15s,border-color .15s;text-align:left}
+.card:hover{transform:translateY(-2px);border-color:var(--accent)}
+.card.featured{border-color:color-mix(in srgb,var(--hot) 55%,var(--line))}
+.card.featured::before{content:"";position:absolute;left:0;top:18px;bottom:18px;width:3px;border-radius:0 3px 3px 0;background:var(--hot)}
+.c-head{display:flex;gap:12px;align-items:center}
+.ava{flex:none;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font:700 15px var(--display);color:#fff}
+.c-name{font-weight:700;font-size:17px;line-height:1.2}
+.c-sub{color:var(--muted);font-size:13px}
+.star{margin-left:auto;border:0;background:transparent;cursor:pointer;padding:6px;border-radius:8px;color:var(--muted);font-size:20px;line-height:1}
+.star[aria-pressed="true"]{color:var(--hot)}
+.c-desc{color:var(--muted);font-size:14px;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.c-meta{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;border-top:1px dashed var(--line);padding-top:12px}
+.c-meta div span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.c-meta div b{font-size:14px}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:12px;padding:3px 9px;border-radius:999px;background:var(--bg);border:1px solid var(--line);color:var(--muted)}
+.pill{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.pill.live{background:color-mix(in srgb,var(--good) 15%,transparent);color:var(--good)}
+.pill.soon{background:var(--accent-soft);color:var(--accent)}
+.pill.ended{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.pill.hot{background:color-mix(in srgb,var(--hot) 16%,transparent);color:var(--hot)}
+.diff{display:inline-flex;gap:3px;vertical-align:middle}
+.diff i{width:7px;height:12px;border-radius:2px;background:var(--line)}
+.diff.d1 i:nth-child(-n+1),.diff.d2 i:nth-child(-n+2),.diff.d3 i:nth-child(-n+3){background:var(--accent)}
+.c-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.empty{grid-column:1/-1;text-align:center;padding:48px;border:1px dashed var(--line);border-radius:var(--r);color:var(--muted)}
+
+/* sections */
+section.block{margin:56px 0}
+.sec-h{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+.sec-h h2{font:700 26px var(--display)}
+.sec-h p{margin:6px 0 0;color:var(--muted)}
+.cal{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.cal-item{display:flex;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;cursor:pointer}
+.cal-date{flex:none;width:52px;text-align:center;border-radius:10px;background:var(--accent-soft);color:var(--accent);padding:6px 0}
+.cal-date b{display:block;font:700 20px var(--display);line-height:1.1}
+.cal-date span{font-size:11px;text-transform:uppercase}
+.safety{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.tip{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--bad);border-radius:var(--r);padding:16px 18px}
+.tip h3{font-size:16px;margin-bottom:6px}
+.tip p{margin:0;color:var(--muted);font-size:14px}
+.sub{display:grid;grid-template-columns:1.2fr 1fr;gap:24px;align-items:center;background:var(--accent);color:#fff;border-radius:20px;padding:32px}
+.sub h2{font:700 26px var(--display)}
+.sub p{opacity:.85;margin:8px 0 0}
+.sub form{display:flex;gap:8px;flex-wrap:wrap}
+.sub input{flex:1 1 200px;border:0;border-radius:999px;padding:12px 18px;background:#fff;color:#141a2e}
+.sub .btn{background:#141a2e;color:#fff;border:0}
+.sub .msg{flex-basis:100%;font-size:14px;min-height:21px}
+footer{border-top:1px solid var(--line);padding:28px 0 40px;color:var(--muted);font-size:13px}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+
+/* modal */
+.overlay{position:fixed;inset:0;background:rgb(8 10 20 / .55);display:none;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:50;overflow:auto}
+.overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--line);border-radius:20px;max-width:680px;width:100%;padding:28px;position:relative}
+.x{position:absolute;right:16px;top:16px;border:1px solid var(--line);background:var(--bg);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px}
+.m-head{display:flex;gap:14px;align-items:center;padding-right:40px}
+.m-head .ava{width:56px;height:56px;font-size:18px;border-radius:14px}
+.m-head h2{font:700 24px var(--display)}
+.m-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0}
+.m-grid div{background:var(--bg);border-radius:12px;padding:12px}
+.m-grid span{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.m-grid b{font-size:15px}
+.progress{height:8px;border-radius:99px;background:var(--bg);overflow:hidden;margin:8px 0 14px}
+.progress i{display:block;height:100%;background:var(--good);width:0;transition:width .3s}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.steps label{display:flex;gap:12px;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:12px;cursor:pointer}
+.steps input{margin-top:3px;accent-color:var(--good);width:18px;height:18px;flex:none}
+.steps input:checked + span{color:var(--muted);text-decoration:line-through}
+.note{margin-top:18px;padding:12px 14px;border-radius:12px;background:color-mix(in srgb,var(--warn) 12%,transparent);color:var(--ink);font-size:14px}
+.m-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+
+@media (max-width:860px){
+  .hero{grid-template-columns:1fr}
+  .nav{display:none}
+  .sub{grid-template-columns:1fr}
+  .m-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:420px){
+  .stats{grid-template-columns:1fr 1fr 1fr}
+  .stat b{font-size:20px}
+  .top .btn.primary span{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#airdrops" aria-label="DropScout home">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="9" fill="var(--accent)"/><path d="M15 6c3.5 4.6 6 7.9 6 11a6 6 0 0 1-12 0c0-3.1 2.5-6.4 6-11z" fill="#fff"/><circle cx="15" cy="17.5" r="2.2" fill="var(--accent)"/></svg>
+      DropScout
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#airdrops" aria-current="true">Airdrops</a>
+      <a href="#calendar">Calendar</a>
+      <a href="#safety">Safety</a>
+      <a href="#subscribe">Alerts</a>
+    </nav>
+    <div class="spacer"></div>
+    <button class="btn" id="favBtn" type="button" aria-pressed="false">★ Watchlist <span class="fav-count num" id="favCount">0</span></button>
+    <a class="btn primary" href="#subscribe">🔔 <span>Get alerts</span></a>
+  </div>
+</header>
+
+<main class="wrap" id="airdrops">
+  <div class="hero">
+    <div>
+      <h1>Fresh airdrops, <em>vetted</em> before you spend a cent on gas</h1>
+      <p>A curated list of token airdrops with step-by-step tasks, estimated rewards and deadlines. Tick off steps as you go, build a watchlist and never miss a snapshot.</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><b class="num" id="sLive">0</b><span><i class="pulse"></i>live</span></div>
+      <div class="stat"><b class="num" id="sSoon">0</b><span>upcoming</span></div>
+      <div class="stat"><b class="num" id="sValue">$0</b><span>est. live pool</span></div>
+    </div>
+  </div>
+
+  <div class="bar" role="search">
+    <label class="search" for="q">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Project, ticker or chain…" autocomplete="off">
+    </label>
+    <div class="tabs" role="group" aria-label="Status">
+      <button type="button" data-status="live" aria-pressed="true">Live</button>
+      <button type="button" data-status="soon" aria-pressed="false">Upcoming</button>
+      <button type="button" data-status="ended" aria-pressed="false">Ended</button>
+      <button type="button" data-status="all" aria-pressed="false">All</button>
+    </div>
+    <label for="sort" class="c-sub" style="display:flex;gap:8px;align-items:center">Sort
+      <select id="sort">
+        <option value="featured">Featured</option>
+        <option value="value">Highest reward</option>
+        <option value="deadline">Ending soonest</option>
+        <option value="easy">Easiest first</option>
+        <option value="new">Newest</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="chips" id="chips" role="group" aria-label="Categories"></div>
+  <div class="toggles">
+    <label for="fNoKyc"><input type="checkbox" id="fNoKyc"> No KYC</label>
+    <label for="fFree"><input type="checkbox" id="fFree"> No deposit</label>
+    <label for="fTestnet"><input type="checkbox" id="fTestnet"> Testnets only</label>
+  </div>
+
+  <div class="result-line"><span id="count" class="num"></span><span>Demo data</span></div>
+  <div class="grid" id="grid"></div>
+
+  <section class="block" id="calendar">
+    <div class="sec-h">
+      <div><h2>Snapshot &amp; claim calendar</h2><p>Upcoming dates to finish your tasks by.</p></div>
+    </div>
+    <div class="cal" id="cal"></div>
+  </section>
+
+  <section class="block" id="safety">
+    <div class="sec-h">
+      <div><h2>How not to lose your wallet chasing airdrops</h2><p>Most "airdrops" that land in your DMs are phishing. Five rules to keep in mind.</p></div>
+    </div>
+    <div class="safety">
+      <div class="tip"><h3>Nobody needs your seed phrase</h3><p>No real project, bot or "support agent" will ever ask for your 12 or 24 words. If they do, it is a scam.</p></div>
+      <div class="tip"><h3>Use a separate airdrop wallet</h3><p>Keep one address just for airdrops and hold only enough on it for gas.</p></div>
+      <div class="tip"><h3>Check the domain</h3><p>Take links only from the project's official X or Discord. Phishing sites are often one letter off.</p></div>
+      <div class="tip"><h3>Read what you sign</h3><p>Requests like <span style="font-family:var(--mono);font-size:13px">setApprovalForAll</span> and unlimited approvals give away access to all your tokens.</p></div>
+      <div class="tip"><h3>Revoke old approvals</h3><p>Once a month, review your token approvals in a revoke tool and remove the ones you no longer need.</p></div>
+    </div>
+  </section>
+
+  <section class="block" id="subscribe">
+    <div class="sub">
+      <div>
+        <h2>Hear about new airdrops first</h2>
+        <p>One weekly digest of vetted airdrops plus snapshot reminders. No spam.</p>
+      </div>
+      <form id="subForm" novalidate>
+        <label for="email" style="position:absolute;left:-9999px">Email or Telegram</label>
+        <input id="email" type="text" placeholder="email or @telegram" autocomplete="email">
+        <button class="btn" type="submit">Subscribe</button>
+        <div class="msg" id="subMsg" role="status"></div>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div><b style="color:var(--ink)">DropScout</b> · airdrop tracker. The projects on this page are fictional examples.</div>
+    <div>Not financial advice. Always do your own research.</div>
+  </div>
+</footer>
+
+<div class="overlay" id="overlay" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle" id="modal"></div>
+</div>
+
+<script>
+(function(){
+const DAY = 864e5, now = Date.now();
+const d = n => now + n*DAY;
+
+// Demo projects (fictional)
+const DROPS = [
+ {id:"lumen-l2",name:"Lumen Network",ticker:"LMN",chain:"Ethereum L2",cat:"L2",status:"live",value:1200,start:d(-20),end:d(9),diff:2,kyc:false,deposit:true,testnet:false,featured:true,added:d(-20),
+  desc:"An optimistic rollup with native account abstraction. The team has confirmed points for early bridge users.",
+  tasks:["Bridge","DEX","Points"],
+  steps:["Create a fresh wallet and fund it with 0.01–0.02 ETH","Bridge funds to Lumen through the official bridge","Make 3–5 swaps on any DEX on the network","Provide liquidity to the LMN/ETH pool for at least a week","Check your points on the project dashboard"]},
+ {id:"orbit-wallet",name:"Orbit Wallet",ticker:"ORB",chain:"Multichain",cat:"Wallet",status:"live",value:300,start:d(-5),end:d(21),diff:1,kyc:false,deposit:false,testnet:false,featured:false,added:d(-5),
+  desc:"A non-custodial wallet rewarding daily check-ins and referrals with ORB.",
+  tasks:["Daily","Referral","Twitter"],
+  steps:["Install the Orbit extension from the official store","Create a new wallet and store the phrase offline","Check in under Quests every day","Follow the project's official X account"]},
+ {id:"kelp-testnet",name:"Kelp Chain",ticker:"KELP",chain:"Cosmos",cat:"Testnet",status:"live",value:800,start:d(-12),end:d(4),diff:3,kyc:false,deposit:false,testnet:true,featured:true,added:d(-12),
+  desc:"Testnet for a modular L1. Validators and active testers in the incentivized phase will be rewarded.",
+  tasks:["Testnet","Faucet","Discord","Node"],
+  steps:["Get test tokens from the Discord faucet","Make 10+ testnet transactions","Stake tokens with any validator","Optional: run a node using the docs guide","Submit the bug feedback form"]},
+ {id:"mintara",name:"Mintara",ticker:"MNT",chain:"Solana",cat:"NFT",status:"live",value:150,start:d(-3),end:d(12),diff:1,kyc:false,deposit:true,testnet:false,featured:false,added:d(-3),
+  desc:"A Solana NFT marketplace awarding points for listings and trades.",
+  tasks:["NFT","Trading","Points"],
+  steps:["Connect your wallet to the marketplace","List any NFT for sale","Make one purchase","Watch for the weekly points distribution"]},
+ {id:"pyre-defi",name:"Pyre Finance",ticker:"PYR",chain:"Arbitrum",cat:"DeFi",status:"live",value:950,start:d(-30),end:d(2),diff:2,kyc:true,deposit:true,testnet:false,featured:false,added:d(-30),
+  desc:"A lending protocol with a retroactive drop. Snapshot in 2 days; claiming requires verification.",
+  tasks:["Lending","KYC","Snapshot"],
+  steps:["Supply at least $50 of any supported asset","Take out a small loan and repay it","Complete KYC on the claim page before the snapshot"]},
+ {id:"questly",name:"Questly",ticker:"QST",chain:"BNB Chain",cat:"SocialFi",status:"live",value:90,start:d(-8),end:d(30),diff:1,kyc:false,deposit:false,testnet:false,featured:false,added:d(-1),
+  desc:"A quest platform where social tasks earn XP that converts into tokens.",
+  tasks:["Twitter","Telegram","Quiz"],
+  steps:["Link your X and Telegram","Pass the intro quiz about the project","Invite one friend with your link"]},
+ {id:"zerowave",name:"ZeroWave",ticker:"ZWV",chain:"zk rollup",cat:"L2",status:"soon",value:2000,start:d(6),end:d(60),diff:3,kyc:false,deposit:true,testnet:false,featured:true,added:d(-2),
+  desc:"A ZK rollup launching mainnet in a week. A points program for early deposits is expected.",
+  tasks:["Bridge","Early","Points"],
+  steps:["Follow the official channels and turn on notifications","Have ETH on Ethereum ready for gas and bridging","Deposit through the official bridge on launch day"]},
+ {id:"hexa-game",name:"Hexa Realms",ticker:"HEX",chain:"Immutable",cat:"Gaming",status:"soon",value:400,start:d(3),end:d(45),diff:2,kyc:false,deposit:false,testnet:true,featured:false,added:d(-4),
+  desc:"An on-chain strategy game opening a playtest. Season players get a share of the genesis allocation.",
+  tasks:["Game","Discord","Playtest"],
+  steps:["Join the waitlist on the website","Get the Playtester role in Discord","Play 10 matches in season one"]},
+ {id:"aquarelle",name:"Aquarelle DEX",ticker:"AQR",chain:"Base",cat:"DeFi",status:"soon",value:600,start:d(10),end:d(40),diff:2,kyc:false,deposit:true,testnet:false,featured:false,added:d(-6),
+  desc:"A concentrated-liquidity DEX on Base. A drop for first-month LPs has been announced.",
+  tasks:["LP","DEX"],
+  steps:["Fund your wallet on Base","After launch, add liquidity to any pool","Keep the position in range for at least 14 days"]},
+ {id:"nodeforge",name:"NodeForge",ticker:"NFG",chain:"DePIN",cat:"DePIN",status:"live",value:500,start:d(-15),end:d(18),diff:2,kyc:false,deposit:false,testnet:false,featured:false,added:d(-15),
+  desc:"A decentralized compute network rewarding uptime of a light browser node.",
+  tasks:["Node","Uptime","Referral"],
+  steps:["Install the NodeForge node extension","Keep it running at least 8 hours a day","Check your uptime in the dashboard"]},
+ {id:"cinder",name:"Cinder Swap",ticker:"CDR",chain:"Ethereum",cat:"DeFi",status:"ended",value:1100,start:d(-90),end:d(-10),diff:2,kyc:false,deposit:true,testnet:false,featured:false,added:d(-90),
+  desc:"This airdrop has ended. Claims were open for 30 days; unclaimed tokens went to the DAO treasury.",
+  tasks:["DEX","Claimed"],
+  steps:["Claim window closed"]},
+ {id:"petal-nft",name:"Petal Pass",ticker:"PTL",chain:"Polygon",cat:"NFT",status:"ended",value:70,start:d(-60),end:d(-25),diff:1,kyc:false,deposit:false,testnet:false,featured:false,added:d(-60),
+  desc:"Free pass mint for holders. This airdrop has ended.",
+  tasks:["NFT","Free mint"],
+  steps:["Claim window closed"]}
+];
+
+const CATS = ["All", ...new Set(DROPS.map(x=>x.cat))];
+const STATUS = {live:["Live","live"],soon:["Upcoming","soon"],ended:["Ended","ended"]};
+const state = {status:"live",cat:"All",q:"",sort:"featured",noKyc:false,free:false,testnet:false,favOnly:false};
+
+// localStorage helpers
+const store = {
+  get(k,def){try{const v=localStorage.getItem(k);return v?JSON.parse(v):def}catch(e){return def}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+let favs = new Set(store.get("ds-favs",[]));
+let progress = store.get("ds-progress",{});
+
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const money = v=>"$"+v.toLocaleString("en-US");
+function hue(str){let h=0;for(const c of str)h=(h*31+c.charCodeAt(0))%360;return h}
+function ava(x){const h=hue(x.id);return `<div class="ava" style="background:linear-gradient(135deg,hsl(${h} 70% 52%),hsl(${(h+50)%360} 75% 42%))" aria-hidden="true">${esc(x.ticker.slice(0,2))}</div>`}
+function left(x){
+  const t = x.status==="soon" ? x.start : x.end;
+  const diff = t-now;
+  if(x.status==="ended") return "Ended";
+  const days=Math.floor(Math.abs(diff)/DAY), hrs=Math.floor((Math.abs(diff)%DAY)/36e5);
+  return (x.status==="soon"?"in ":"")+(days>0?days+"d ":"")+hrs+"h";
+}
+const diffBar = n=>`<span class="diff d${n}" aria-label="Difficulty ${n} of 3"><i></i><i></i><i></i></span>`;
+const diffName = n=>["","Easy","Medium","Hard"][n];
+function pct(x){const p=progress[x.id]||[];return x.steps.length?Math.round(p.filter(Boolean).length/x.steps.length*100):0}
+
+function filtered(){
+  const q=state.q.trim().toLowerCase();
+  let list=DROPS.filter(x=>
+    (state.status==="all"||x.status===state.status)&&
+    (state.cat==="All"||x.cat===state.cat)&&
+    (!state.noKyc||!x.kyc)&&(!state.free||!x.deposit)&&(!state.testnet||x.testnet)&&
+    (!state.favOnly||favs.has(x.id))&&
+    (!q||[x.name,x.ticker,x.chain,x.cat].join(" ").toLowerCase().includes(q))
+  );
+  const s={
+    featured:(a,b)=>(b.featured-a.featured)||(b.value-a.value),
+    value:(a,b)=>b.value-a.value,
+    deadline:(a,b)=>(a.status==="soon"?a.start:a.end)-(b.status==="soon"?b.start:b.end),
+    easy:(a,b)=>a.diff-b.diff||b.value-a.value,
+    new:(a,b)=>b.added-a.added
+  }[state.sort];
+  return list.sort(s);
+}
+
+function renderChips(){
+  $("#chips").innerHTML=CATS.map(c=>`<button type="button" class="chip" data-cat="${esc(c)}" aria-pressed="${c===state.cat}">${esc(c)}</button>`).join("");
+}
+
+function card(x){
+  const [lbl,cls]=STATUS[x.status];
+  const urgent = x.status==="live" && (x.end-now)<5*DAY;
+  const p=pct(x);
+  return `<article class="card${x.featured?" featured":""}" tabindex="0" data-id="${x.id}" aria-label="${esc(x.name)}">
+    <div class="c-head">${ava(x)}
+      <div><div class="c-name">${esc(x.name)}</div><div class="c-sub">$${esc(x.ticker)} · ${esc(x.chain)}</div></div>
+      <button type="button" class="star" data-fav="${x.id}" aria-pressed="${favs.has(x.id)}" aria-label="Add to watchlist">${favs.has(x.id)?"★":"☆"}</button>
+    </div>
+    <div class="c-row"><span class="pill ${cls}">${lbl}</span>${x.featured?'<span class="pill hot">Hot</span>':""}${urgent?'<span class="pill hot">Ending soon</span>':""}${p>0?`<span class="pill live">${p}% done</span>`:""}</div>
+    <p class="c-desc">${esc(x.desc)}</p>
+    <div class="tags">${x.tasks.map(t=>`<span class="tag">${esc(t)}</span>`).join("")}</div>
+    <div class="c-meta">
+      <div><span>Est. reward</span><b class="num">~${money(x.value)}</b></div>
+      <div><span>${x.status==="soon"?"Starts":"Time left"}</span><b class="num">${left(x)}</b></div>
+      <div><span>Difficulty</span><b>${diffBar(x.diff)}</b></div>
+    </div>
+  </article>`;
+}
+
+function render(){
+  const list=filtered();
+  $("#grid").innerHTML=list.length?list.map(card).join(""):`<div class="empty">Nothing matches. Clear some filters or switch the status to All.</div>`;
+  const n=list.length;
+  $("#count").textContent=`${n} ${n===1?"project":"projects"}`;
+  $("#favCount").textContent=favs.size;
+  $("#favBtn").setAttribute("aria-pressed",state.favOnly);
+}
+
+function stats(){
+  const live=DROPS.filter(x=>x.status==="live");
+  $("#sLive").textContent=live.length;
+  $("#sSoon").textContent=DROPS.filter(x=>x.status==="soon").length;
+  $("#sValue").textContent=money(live.reduce((s,x)=>s+x.value,0));
+}
+
+function calendar(){
+  const items=DROPS.filter(x=>x.status!=="ended").map(x=>({x,t:x.status==="soon"?x.start:x.end,kind:x.status==="soon"?"Starts":"Deadline"})).sort((a,b)=>a.t-b.t).slice(0,8);
+  const mon=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  $("#cal").innerHTML=items.map(({x,t,kind})=>{const dt=new Date(t);return `<div class="cal-item" tabindex="0" data-id="${x.id}">
+    <div class="cal-date"><b class="num">${dt.getDate()}</b><span>${mon[dt.getMonth()]}</span></div>
+    <div><div class="c-name" style="font-size:15px">${esc(x.name)}</div><div class="c-sub">${kind} · ~${money(x.value)}</div></div></div>`}).join("");
+}
+
+// modal
+let lastFocus=null;
+function openModal(id){
+  const x=DROPS.find(y=>y.id===id); if(!x)return;
+  lastFocus=document.activeElement;
+  const done=progress[x.id]||[];
+  const [lbl,cls]=STATUS[x.status];
+  $("#modal").innerHTML=`<button class="x" type="button" id="mClose" aria-label="Close">✕</button>
+    <div class="m-head">${ava(x)}<div><h2 id="mTitle">${esc(x.name)}</h2><div class="c-sub">$${esc(x.ticker)} · ${esc(x.chain)} · ${esc(x.cat)}</div></div></div>
+    <p style="color:var(--muted);margin:16px 0 0">${esc(x.desc)}</p>
+    <div class="m-grid">
+      <div><span>Status</span><b><span class="pill ${cls}">${lbl}</span></b></div>
+      <div><span>Est. reward</span><b class="num">~${money(x.value)}</b></div>
+      <div><span>${x.status==="soon"?"Starts":"Time left"}</span><b class="num">${left(x)}</b></div>
+      <div><span>Difficulty</span><b>${diffName(x.diff)}</b></div>
+    </div>
+    <div class="c-row" style="margin-bottom:16px">
+      <span class="tag">${x.kyc?"KYC required":"No KYC"}</span>
+      <span class="tag">${x.deposit?"Deposit / gas needed":"Free"}</span>
+      ${x.testnet?'<span class="tag">Testnet</span>':""}
+    </div>
+    <h3 style="font-size:17px">Step-by-step guide</h3>
+    <div class="progress" aria-hidden="true"><i id="mBar"></i></div>
+    <ul class="steps">${x.steps.map((s,i)=>`<li><label for="st-${i}"><input type="checkbox" id="st-${i}" data-step="${i}" ${done[i]?"checked":""} ${x.status==="ended"?"disabled":""}><span>${i+1}. ${esc(s)}</span></label></li>`).join("")}</ul>
+    <div class="note">Reward estimates are rough and no airdrop is guaranteed. Only use links from the project's official channels.</div>
+    <div class="m-actions">
+      <button class="btn primary" type="button" data-fav="${x.id}" aria-pressed="${favs.has(x.id)}">${favs.has(x.id)?"★ On watchlist":"☆ Add to watchlist"}</button>
+      <button class="btn" type="button" id="mCopy">Copy checklist</button>
+    </div>`;
+  updateBar(x);
+  $("#overlay").classList.add("open");$("#overlay").setAttribute("aria-hidden","false");
+  $("#mClose").focus();
+  if(location.hash!=="#"+id) history.replaceState(null,"","#"+id);
+
+  $("#modal").querySelectorAll("[data-step]").forEach(cb=>cb.addEventListener("change",()=>{
+    const arr=progress[x.id]||[];arr[+cb.dataset.step]=cb.checked;progress[x.id]=arr;store.set("ds-progress",progress);updateBar(x);render();
+  }));
+  $("#mCopy").addEventListener("click",async e=>{
+    const text=x.name+" ($"+x.ticker+")\n"+x.steps.map((s,i)=>((progress[x.id]||[])[i]?"[x] ":"[ ] ")+s).join("\n");
+    try{await navigator.clipboard.writeText(text);e.target.textContent="Copied"}catch(err){e.target.textContent="Couldn't copy"}
+  });
+}
+function updateBar(x){$("#mBar").style.width=pct(x)+"%"}
+function closeModal(){
+  $("#overlay").classList.remove("open");$("#overlay").setAttribute("aria-hidden","true");
+  if(DROPS.some(x=>"#"+x.id===location.hash)) history.replaceState(null,"","#airdrops");
+  if(lastFocus) lastFocus.focus();
+}
+
+function toggleFav(id){
+  favs.has(id)?favs.delete(id):favs.add(id);store.set("ds-favs",[...favs]);render();
+  if($("#overlay").classList.contains("open")) openModal(id);
+}
+
+// events
+document.addEventListener("click",e=>{
+  const fav=e.target.closest("[data-fav]");
+  if(fav){e.stopPropagation();toggleFav(fav.dataset.fav);return}
+  const tab=e.target.closest("[data-status]");
+  if(tab){state.status=tab.dataset.status;document.querySelectorAll("[data-status]").forEach(b=>b.setAttribute("aria-pressed",b===tab));render();return}
+  const chip=e.target.closest("[data-cat]");
+  if(chip){state.cat=chip.dataset.cat;renderChips();render();return}
+  if(e.target.id==="mClose"||e.target.id==="overlay"){closeModal();return}
+  const c=e.target.closest(".card,.cal-item");
+  if(c&&!e.target.closest(".modal"))openModal(c.dataset.id);
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&$("#overlay").classList.contains("open"))closeModal();
+  if((e.key==="Enter"||e.key===" ")&&e.target.matches(".card,.cal-item")){e.preventDefault();openModal(e.target.dataset.id)}
+});
+$("#q").addEventListener("input",e=>{state.q=e.target.value;if(state.q)state.status="all",document.querySelectorAll("[data-status]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.status==="all"));render()});
+$("#sort").addEventListener("change",e=>{state.sort=e.target.value;render()});
+$("#fNoKyc").addEventListener("change",e=>{state.noKyc=e.target.checked;render()});
+$("#fFree").addEventListener("change",e=>{state.free=e.target.checked;render()});
+$("#fTestnet").addEventListener("change",e=>{state.testnet=e.target.checked;render()});
+$("#favBtn").addEventListener("click",()=>{state.favOnly=!state.favOnly;if(state.favOnly){state.status="all";document.querySelectorAll("[data-status]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.status==="all"))}render();document.getElementById("airdrops").scrollIntoView({behavior:"smooth"})});
+$("#subForm").addEventListener("submit",e=>{
+  e.preventDefault();const v=$("#email").value.trim();const m=$("#subMsg");
+  if(!/^@[\w]{4,}$/.test(v)&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){m.textContent="Enter an email (name@example.com) or a Telegram handle starting with @.";return}
+  m.textContent="This is a demo, so your subscription isn't sent anywhere yet. Email alerts come in the next version.";
+});
+function onHash(){const id=location.hash.slice(1);if(DROPS.some(x=>x.id===id))openModal(id)}
+window.addEventListener("hashchange",onHash);
+
+renderChips();stats();calendar();render();onHash();
+})();
+</script>
+</body>
+</html>
